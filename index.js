@@ -1,8 +1,8 @@
-let a = document.getElement('a')
-let b = document.getElement('b')
+let c = document.getElement('c')
+let d = document.getElement('d')
 function a() {
-    a.style.display = 'block'
+    c.style.display = 'block'
 }
 function b() {
-    b.style.display = 'block'
+    d.style.display = 'block'
 }
