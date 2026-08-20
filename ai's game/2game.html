@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>随机小人闯关20关</title>
+<style>
+*{touch-action: manipulation;}
+body{
+    background:#b8e7ff;
+    margin:0;
+    overflow:hidden
+}
+canvas{
+    display:block;
+    margin:0 auto;
+    max-width:100vw
+}
+.ctrl{
+    position:fixed;
+    bottom:20px;
+    left:0;
+    right:0;
+    display:flex;
+    justify-content:space-around;
+    pointer-events:none;
+}
+.btn{
+    width:70px;
+    height:70px;
+    background:rgba(0,0,0,0.3);
+    border-radius:50%;
+    color:#fff;
+    font-size:26px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:auto;
+    user-select:none;
+}
+</style>
+</head>
+<body>
+<canvas id="game" width="700" height="400"></canvas>
+<div class="ctrl">
+  <div class="btn" id="leftBtn">←</div>
+  <div class="btn" id="jumpBtn">跳</div>
+  <div class="btn" id="rightBtn">→</div>
+</div>
+
+<script>
+// 页面加载自动添加随机参数 ?r=随机数字
+(function addRandomUrlParam(){
+    let url = new URL(location.href);
+    let rand = Math.floor(Math.random() * 999999);
+    url.searchParams.set("r", rand);
+    history.replaceState(null, "", url.toString());
+})();
+
+let canvas = document.getElementById('game');
+let ctx = canvas.getContext('2d');
+
+// 玩家数据
+let player = {
+  x:20,y:320,w:26,h:36,
+  vx:0,vy:0,speed:4,jump:-12,gravity:0.5,ground:true
+}
+let key = {left:false,right:false,jump:false}
+
+// 扩充至20个原始关卡
+const originLevels = [
+  //1
+  {p:[[0,360,110,40],[130,290,110,40],[260,220,110,40],[390,160,110,40]],e:[480,120,35,35]},
+  //2
+  {p:[[0,360,90,40],[120,270,90,40],[230,330,90,40],[350,240,90,40],[470,160,90,40]],e:[530,120,35,35]},
+  //3
+  {p:[[0,360,85,40],[110,280,85,40],[220,200,85,40],[330,290,85,40],[440,180,85,40]],e:[510,130,35,35]},
+  //4
+  {p:[[0,360,80,40],[100,260,80,40],[200,170,80,40],[300,270,80,40],[400,160,80,40],[500,90,80,40]],e:[560,50,35,35]},
+  //5 最简
+  {p:[[0,360,160,40],[180,320,160,40],[360,280,160,40]],e:[460,240,35,35]},
+  //6
+  {p:[[0,360,140,40],[160,310,140,40],[320,260,140,40],[480,210,140,40]],e:[540,170,35,35]},
+  //7
+  {p:[[0,360,120,40],[140,300,120,40],[280,240,120,40],[420,180,120,40]],e:[520,140,35,35]},
+  //8
+  {p:[[0,360,100,40],[130,290,100,40],[260,220,100,40],[390,150,100,40]],e:[460,110,35,35]},
+  //9
+  {p:[[0,360,90,40],[120,270,90,40],[230,330,90,40],[350,240,90,40],[470,160,90,40]],e:[530,120,35,35]},
+  //10
+  {p:[[0,360,85,40],[110,280,85,40],[220,200,85,40],[330,290,85,40],[440,180,85,40]],e:[510,130,35,35]},
+  //11
+  {p:[[0,360,80,40],[100,260,80,40],[200,170,80,40],[300,270,80,40],[400,160,80,40],[500,90,80,40]],e:[560,50,35,35]},
+  //12
+  {p:[[0,360,70,40],[90,250,70,40],[180,140,70,40],[270,230,70,40],[360,120,70,40],[450,200,70,40],[540,100,70,40]],e:[600,60,35,35]},
+  //13
+  {p:[[0,360,95,40],[145,285,95,40],[290,210,95,40],[435,135,95,40]],e:[520,95,35,35]},
+  //14
+  {p:[[0,360,88,40],[132,262,88,40],[264,182,88,40],[396,272,88,40],[528,152,88,40]],e:[580,110,35,35]},
+  //15
+  {p:[[0,360,75,40],[115,245,75,40],[230,165,75,40],[345,255,75,40],[460,145,75,40],[575,75,75,40]],e:[620,40,35,35]},
+  //16
+  {p:[[0,360,105,40],[155,295,105,40],[310,225,105,40],[465,155,105,40]],e:[550,115,35,35]},
+  //17
+  {p:[[0,360,82,40],[124,254,82,40],[248,174,82,40],[372,264,82,40],[496,144,82,40]],e:[555,100,35,35]},
+  //18
+  {p:[[0,360,72,40],[108,238,72,40],[216,158,72,40],[324,248,72,40],[432,138,72,40],[540,68,72,40]],e:[590,30,35,35]},
+  //19
+  {p:[[0,360,92,40],[138,288,92,40],[276,218,92,40],[414,148,92,40],[552,88,92,40]],e:[610,50,35,35]},
+  //20
+  {p:[[0,360,68,40],[102,232,68,40],[204,152,68,40],[306,242,68,40],[408,132,68,40],[510,222,68,40],[612,62,68,40]],e:[650,20,35,35]}
+];
+
+// 洗牌函数
+function shuffle(arr){
+  let temp = [...arr];
+  for(let i = temp.length - 1; i > 0; i--){
+    let r = Math.floor(Math.random() * (i + 1));
+    [temp[i], temp[r]] = [temp[r], temp[i]];
+  }
+  return temp;
+}
+
+let levels = shuffle(originLevels);
+let curLv = 0;
+
+// 电脑键盘
+document.onkeydown = e=>{
+  if(e.key==='ArrowLeft')key.left=true
+  if(e.key==='ArrowRight')key.right=true
+  if(e.key===' ')key.jump=true
+}
+document.onkeyup = e=>{
+  if(e.key==='ArrowLeft')key.left=false
+  if(e.key==='ArrowRight')key.right=false
+  if(e.key===' ')key.jump=false
+}
+
+// 手机触屏按钮
+const leftBtn = document.getElementById('leftBtn');
+const rightBtn = document.getElementById('rightBtn');
+const jumpBtn = document.getElementById('jumpBtn');
+leftBtn.addEventListener('touchstart',()=>key.left=true);
+leftBtn.addEventListener('touchend',()=>key.left=false);
+rightBtn.addEventListener('touchstart',()=>key.right=true);
+rightBtn.addEventListener('touchend',()=>key.right=false);
+jumpBtn.addEventListener('touchstart',()=>key.jump=true);
+jumpBtn.addEventListener('touchend',()=>key.jump=false);
+
+function resetPlayer(){
+  player.x=20;player.y=320;player.vx=0;player.vy=0
+}
+function hit(a,b){
+  return a.x<b[0]+b[2]&&a.x+a.w>b[0]&&a.y<b[1]+b[3]&&a.y+a.h>b[1]
+}
+
+function update(){
+  let lv = levels[curLv]
+  player.vx=0
+  if(key.left)player.vx=-player.speed
+  if(key.right)player.vx=player.speed
+  if(key.jump&&player.ground){
+    player.vy=player.jump
+    player.ground=false
+  }
+  player.vy+=player.gravity
+  player.x+=player.vx
+  player.y+=player.vy
+
+  if(player.x<0)player.x=0
+  if(player.x>canvas.width-player.w)player.x=canvas.width-player.w
+
+  player.ground=false
+  for(let plat of lv.p){
+    if(player.vy>0&&hit(player,plat)){
+      player.y=plat[1]-player.h
+      player.vy=0
+      player.ground=true
+    }
+  }
+  if(player.y>420)resetPlayer()
+
+  if(hit(player,lv.e)){
+    curLv++
+    if(curLv>=levels.length){
+      alert('全部20关通关！重新随机洗牌开始新一轮！');
+      levels = shuffle(originLevels);
+      curLv = 0;
+    }
+    resetPlayer()
+  }
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height)
+  let lv = levels[curLv]
+  // 平台
+  ctx.fillStyle='#704820'
+  for(let p of lv.p){
+    ctx.fillRect(p[0],p[1],p[2],p[3])
+    ctx.fillStyle='#42b842'
+    ctx.fillRect(p[0],p[1],p[2],5)
+    ctx.fillStyle='#704820'
+  }
+  // 终点
+  ctx.fillStyle='#2cd02c'
+  ctx.fillRect(lv.e[0],lv.e[1],lv.e[2],lv.e[3])
+  // 小人
+  ctx.fillStyle='#4096ff'
+  ctx.fillRect(player.x,player.y,player.w,player.h)
+  ctx.fillStyle='#ffddbb'
+  ctx.beginPath()
+  ctx.arc(player.x+13,player.y+11,10,0,Math.PI*2)
+  ctx.fill()
+  // 关卡文字
+  ctx.fillStyle='#222'
+  ctx.font='bold 18px Arial'
+  ctx.fillText(`第${curLv+1}关 / 共20关`,10,26)
+}
+
+function loop(){
+  update();draw();requestAnimationFrame(loop)
+}
+loop()
+</script>
+</body>
+</html>
