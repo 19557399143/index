@@ -1,8 +1,8 @@
 let div = document.getElementById(div)
 let diva = document.getElementById(diva)
-function 1() {
+function a() {
     alert(div)
 }
-function 2() {
+function b() {
     alert(diva)
 }
