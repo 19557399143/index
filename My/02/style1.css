@@ -1,0 +1,15 @@
+* {
+    padding: 0;
+    margin: 0;
+    position: relative;
+}
+#inp1,#inp2,button:last-child {
+    margin: 10px auto;
+}
+button:not(button:last-child) {
+    right: 0;
+    margin: 10px;
+}
+button:last-child {
+    background-color: #686868;
+}

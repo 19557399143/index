@@ -1,5 +1,5 @@
-let c = document.getElement('c')
-let d = document.getElement('d')
+let c = document.getElementById('c')
+let d = document.getElementById('d')
 function a() {
     c.style.display = 'block'
 }
