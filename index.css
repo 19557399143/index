@@ -1,0 +1,12 @@
+div {
+	width: 300px;
+	height: 200px;
+	position: relative;
+	top: 50%;
+	left: 50%;
+	margin-top: -300px;
+	margin-left: -200px;
+	display: none;
+	/* background-color: #fff; */
+    background-color: pink;
+}
