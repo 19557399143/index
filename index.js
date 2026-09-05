@@ -6,7 +6,7 @@ function getid(id) {
 function href(href) {
     let dehref = window.location.href
     let dhref = href
-    let open = window.open(`${dehref}/${dhref}`)
+    let open = window.open(`${dehref}${dhref}`)
 }
 function openpa() {
     let ophref = input.value
