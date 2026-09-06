@@ -4,7 +4,7 @@ function getid(id) {
     return Id
 }
 function href(href) {
-    let dehref = window.location.href
+    let dehref = window.location.href - '/'
     let dhref = href
     let open = window.open(`${dehref}${dhref}`)
 }
