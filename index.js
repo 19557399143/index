@@ -4,7 +4,7 @@ function getid(id) {
     return Id
 }
 function href(href) {
-    let dehref = Streen(window.location.href) - '/'
+    let dehref = https://19557399143.github.io/index
     let dhref = href
     let open = window.open(`${dehref}${dhref}`)
 }
