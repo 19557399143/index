@@ -4,12 +4,10 @@ function getid(id) {
     return Id
 }
 function href(href) {
-    let dehref = 'https://19557399143.github.io/index'
+    let dehref = window.location.href
     let dhref = href
     let open = window.open(`${dehref}/${dhref}`)
 }
 function openpa() {
-    let ohref = input.value
-    let ophref = ohref
-    href(ophref)
+    href(input.value)
 }
