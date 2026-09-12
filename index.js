@@ -1,8 +1,4 @@
-let input = getid('input')
-function getid(id) {
-    let Id = document.getElementById(id)
-    return Id
-}
+let input = document.getElementById('input')
 function href(href) {
     let dehref = window.location.href
     let dhref = href
