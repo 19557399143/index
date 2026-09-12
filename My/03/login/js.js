@@ -32,6 +32,6 @@ function ok() {
         const oen = window.open(`19557399143.github.io/index/My/03/hello/?${in1.value}`)
     }
 }
-function cliit(){
+function it(){
     const open = window.open('19557399143.github.io/index/My/03/login/in/')
 }
